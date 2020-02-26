@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flows>
+	<flow html="/web/chart_demo.html" id="chart_demo" route="/"/>
+</flows>

@@ -1,0 +1,21 @@
+<link rel="import" href="frontend://bower_components/vaadin-ordered-layout/vaadin-horizontal-layout.html">
+<link rel="import" href="frontend://bower_components/vaadin-button/vaadin-button.html">
+<link rel="import" href="frontend://bower_components/c3-chart/line-chart.html">
+
+<uibuilder-page on-after-load="chartDemo::init">
+    <div style="width: 100%; height: 100%;">
+        <vaadin-horizontal-layout>
+            <vaadin-button id="addMoreBtn" on-click="chartDemo::addMoreData">Push 50 more items</vaadin-button>
+            <vaadin-button id="continuous" on-click="chartDemo::toggleContinuous" theme="primary success">
+                Start continuously adding
+            </vaadin-button>
+        </vaadin-horizontal-layout>
+        <line-chart id="chart"
+                    style="height: 600px"
+                    enable-zoom
+                    enable-subchart
+                    connect-null
+                    hide-points>
+        </line-chart>
+    </div>
+</uibuilder-page>
