@@ -2,16 +2,16 @@ package eu.redbean.uibuilder.components.charts;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import eu.redbean.uibuilder.components.charts.data.DataFrameBuilder;
 
 import java.util.Collection;
 import java.util.Objects;
 
-import static eu.redbean.uibuilder.components.charts.LineChart.*;
+import static eu.redbean.uibuilder.components.charts.LineChart.TAG_NAME;
 
 @Tag(TAG_NAME)
-@HtmlImport("frontend://bower_components/c3-chart/src/line-chart.html")
+@JsModule("./c3-chart/src/line-chart.js")
 public class LineChart<T> extends Component {
 
     public static final String TAG_NAME = "line-chart";
@@ -32,16 +32,16 @@ public class LineChart<T> extends Component {
     public void setItems(Collection<T> items) {
         Objects.requireNonNull(dataFrameBuilder);
         getElement().callJsFunction(
-            "__destroy_and_rebuild",
-            dataFrameBuilder.convertToInitialDataJson(items)
+                "__destroy_and_rebuild",
+                dataFrameBuilder.convertToInitialDataJson(items)
         );
     }
 
     public void pushAdditionalItems(Collection<T> additionalItems, Integer pushLength, Integer transitionDuration) {
         Objects.requireNonNull(dataFrameBuilder);
         getElement().callJsFunction(
-            "flow",
-            dataFrameBuilder.convertToDataFrame(additionalItems, pushLength, transitionDuration)
+                "flow",
+                dataFrameBuilder.convertToDataFrame(additionalItems, pushLength, transitionDuration)
         );
         if (dataFrameBuilder.providesXGridLines()) {
             var gridLinesJson = dataFrameBuilder.convertToXGridLines(additionalItems);
