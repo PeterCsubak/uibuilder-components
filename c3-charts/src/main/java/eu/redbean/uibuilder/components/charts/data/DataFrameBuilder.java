@@ -1,5 +1,6 @@
 package eu.redbean.uibuilder.components.charts.data;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import eu.redbean.uibuilder.components.charts.utils.json.JsonUtil;

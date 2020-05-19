@@ -11,6 +11,7 @@
 	<modules>
 		<module>c3-charts</module>
 		<module>demo-app</module>
+		<module>uibuilder-charts</module>
 	</modules>
 
 	<name>Custom components for UIBuilder</name>
