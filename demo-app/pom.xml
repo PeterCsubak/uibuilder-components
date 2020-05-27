@@ -12,7 +12,6 @@
 	<artifactId>demo-app</artifactId>
 
 	<properties>
-		<vaadin.version>14.1.16</vaadin.version>
 		<spring-boot.version>2.1.8.RELEASE</spring-boot.version>
 		<project.java.version>12</project.java.version>
 		<driver.version>1.4.197</driver.version>
@@ -141,11 +140,6 @@
 
 
 
-		<dependency>
-			<groupId>eu.redbean.uibuilder.components</groupId>
-			<artifactId>c3-charts</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
 		<dependency>
 			<groupId>eu.redbean.uibuilder.components</groupId>
 			<artifactId>uibuilder-charts</artifactId>

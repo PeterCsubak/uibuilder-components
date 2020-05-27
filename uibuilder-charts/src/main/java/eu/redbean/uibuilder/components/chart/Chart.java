@@ -10,25 +10,33 @@ import eu.redbean.uibuilder.components.chart.model.DataSet;
 import eu.redbean.uibuilder.components.chart.model.Options;
 import io.devbench.uibuilder.api.listeners.BackendAttachListener;
 import io.devbench.uibuilder.data.api.datasource.DataSourceManager;
-import io.devbench.uibuilder.data.api.datasource.DataSourceProvider;
 import io.devbench.uibuilder.data.api.datasource.interfaces.DataSourceRefreshNotifiable;
+import io.devbench.uibuilder.data.api.filter.FilterExpression;
+import io.devbench.uibuilder.data.collectionds.ItemDataSourceCapable;
 import io.devbench.uibuilder.data.common.datasource.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import lombok.Setter;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Tag(Chart.TAG_NAME)
 @NpmPackage(value = "chart.js", version = "2.9.3")
+@NpmPackage(value = "chartjs-plugin-colorschemes", version = "0.4.0")
+@NpmPackage(value = "chartjs-plugin-zoom", version = "0.7.7")
 @JsModule("./uibuilder-chart/src/uibuilder-chart.js")
-public class Chart extends Component
+public class Chart<T> extends Component
         implements BackendAttachListener,
         DataSourceRefreshNotifiable,
-        DataSourceChangeNotifiable<CommonDataSource<?, ?, ?, ?>> {
+        ItemDataSourceCapable<T>,
+        SupportsDataSourceReuse {
 
     public static final String TAG_NAME = "uibuilder-chart";
 
+    private final String dataSourceContextId;
+
+    @Setter
     private String dataSourceId;
     private String defaultQueryName;
 
@@ -37,6 +45,10 @@ public class Chart extends Component
 
     private ChartDataConverter dataConverter;
 
+
+    public Chart() {
+        this.dataSourceContextId = UUID.randomUUID().toString();
+    }
 
     @Override
     public void onAttached() {
@@ -67,7 +79,17 @@ public class Chart extends Component
 
     private List<?> fetchItems() {
         var dataSource = (CommonDataSource<?, ?, ?, ?>) DataSourceManager.getInstance().getDataSource(dataSourceId, new CommonDataSourceSelector(defaultQueryName, this));
-        return dataSource.fetchData((PagingFetchRequest) null);
+        List<?> items = dataSource.fetchData((PagingFetchRequest) null);
+        var translateData = options.getTranslateData();
+        if (translateData != null) {
+            return translateData.reduce().apply(
+                    items.stream()
+                            .map(translateData.map())
+                            .collect(Collectors.toList())
+            ); // TODO rewrite to reduce(map(list)) form, because that way map can return a Stream, and reduce can operate on that same stream
+        } else {
+            return items;
+        }
     }
 
     @Override
@@ -76,9 +98,20 @@ public class Chart extends Component
     }
 
     @Override
-    public void dataSourceChanged(@NotNull String dataSourceId,
-                                  @NotNull CommonDataSourceSelector commonDataSourceSelector,
-                                  @Nullable CommonDataSource<?, ?, ?, ?> commonDataSource) {
-        reset(); //TODO check if really needed
+    public void connectItemDataSource(String dataSourceId) {
+        this.dataSourceId = dataSourceId;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void setDataSource(CommonDataSource<T, ?, ? extends FilterExpression<?>, ?> collectionDataSource) {
+        CommonDataSourceContext<CommonDataSource<T, ?, ?, ?>> dataSourceContext =
+                (CommonDataSourceContext<CommonDataSource<T, ?, ?, ?>>) CommonDataSourceContext.getInstance();
+        dataSourceContext.replaceDataSource(this.dataSourceId, new CommonDataSourceSelector(null, this), () -> collectionDataSource);
+    }
+
+    @Override
+    public String getContextId() {
+        return dataSourceContextId;
     }
 }

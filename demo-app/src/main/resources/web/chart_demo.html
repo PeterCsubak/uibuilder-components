@@ -1,17 +1,172 @@
-<uibuilder-page on-after-load="chartDemo::init">
-    <div style="width: 100%; height: 100%;">
-        <vaadin-horizontal-layout>
+<uibuilder-page on-after-load="chartDemo::init" xmlns="http://www.w3.org/1999/html">
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        #content {
+            height: 100%;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topRow {
+            flex-grow: 0;
+        }
+
+        #charts {
+            flex-grow: 10;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        #charts > div {
+            flex-grow: 1;
+            flex-basis: 500px;
+        }
+    </style>
+    <div id="content">
+        <vaadin-horizontal-layout class="topRow">
             <vaadin-button id="addMoreBtn" on-click="chartDemo::addMoreData">Push 50 more items</vaadin-button>
             <vaadin-button id="continuous" on-click="chartDemo::toggleContinuous" theme="primary success">
                 Start continuously adding
             </vaadin-button>
         </vaadin-horizontal-layout>
-        <line-chart id="chart"
-                    style="height: 600px"
-                    enable-zoom
-                    enable-subchart
-                    connect-null
-                    hide-points>
-        </line-chart>
+        <uibuilder-common-filter class="topRow">
+            <data-source datasource-id="testDS1" name="testDS"></data-source>
+            <filter-types>
+                <filter-type label="Horses" filter="horses"></filter-type>
+                <filter-type label="Elephants" filter="elephants"></filter-type>
+                <filter-type label="Chickens" filter="chickens"></filter-type>
+            </filter-types>
+        </uibuilder-common-filter>
+        <div id="charts">
+            <div>
+                <uibuilder-chart base-type="bar">
+                    <item-data-source datasource-id="testDS1" name="testDS"
+                                      items="{{chartDemo.items}}"></item-data-source>
+                    <chart-labels value="index"></chart-labels>
+                    <data-set value="elephants" label="Elephants"
+                              background-color="rgba(255, 99, 132, 0.2)"
+                              border-color="rgb(255, 99, 132)"
+                              border-width="1"
+                              y-axis-id="y1"></data-set>
+                    <line-data-set value="horses" label="Horses"
+                                   border-color="rgb(54, 162, 235)"
+                                   span-gaps="true"
+                                   line-tension="0.1"
+                                   point-background-color="rgb(54, 162, 235)"
+                                   fill="false"
+                                   y-axis-id="y2"></line-data-set>
+                    <data-set value="chickens" label="Chickens"
+                              background-color="rgba(255, 205, 86, 0.2)"
+                              border-color="rgb(255, 205, 86)"
+                              border-width="1"
+                              y-axis-id="y1"></data-set>
+
+                    <chart-options>
+                        <axes-option type="y" axis-id="y1" position="left" scale="linear"></axes-option>
+                        <axes-option type="y" axis-id="y2" position="right" scale="logarithmic"></axes-option>
+                        <zoom-option zoom-enabled zoom-mode="x" pan-enabled pan-mode="x"></zoom-option>
+                    </chart-options>
+                </uibuilder-chart>
+            </div>
+            <div>
+                <uibuilder-chart base-type="doughnut">
+                    <data-source datasource-id="testDS1"></data-source>
+                    <chart-labels value="key"></chart-labels>
+                    <data-set value="value"></data-set>
+                    <chart-options>
+                        <color-scheme scheme="office.Aspect6"></color-scheme>
+                        <translate-data map="transposeAnnotated" reduce="sumTransposed"></translate-data>
+                    </chart-options>
+                </uibuilder-chart>
+            </div>
+            <div>
+                <uibuilder-chart base-type="radar">
+                    <data-source datasource-id="testDS1"></data-source>
+                    <chart-labels value="index"></chart-labels>
+                    <radar-data-set value="elephants" label="Elephants"
+                                    border-width="1"
+                                    point-radius="2"
+                                    line-tension="0.0"></radar-data-set>
+                    <radar-data-set value="horses" label="Horses"
+                                    span-gaps="true"
+                                    border-width="1"
+                                    point-radius="2"
+                                    line-tension="0.0"></radar-data-set>
+                    <radar-data-set value="chickens" label="Chickens"
+                                    border-width="1"
+                                    point-radius="2"
+                                    line-tension="0.0"></radar-data-set>
+                    <chart-options>
+                        <color-scheme scheme="brewer.Paired12"
+                                      fill-alphe="0.3"
+                                      override="true"></color-scheme>
+                    </chart-options>
+                </uibuilder-chart>
+            </div>
+            <div>
+                <uibuilder-chart base-type="polarArea">
+                    <data-source datasource-id="testDS1"></data-source>
+                    <chart-labels value="key"></chart-labels>
+                    <data-set value="value"></data-set>
+                    <chart-options>
+                        <color-scheme scheme="tableau.Traffic9" reverse="true"></color-scheme>
+                        <translate-data map="transposeAnnotated" reduce="sumTransposed"></translate-data>
+                    </chart-options>
+                </uibuilder-chart>
+            </div>
+            <div>
+                <uibuilder-chart base-type="horizontalBar">
+                    <data-source datasource-id="testDS1"></data-source>
+                    <chart-labels value="index"></chart-labels>
+                    <data-set value="elephants" label="Elephants"></data-set>
+                    <data-set value="horses" label="Horses"></data-set>
+                    <data-set value="chickens" label="Chickens"></data-set>
+                    <chart-options>
+                        <color-scheme scheme="brewer.DarkTwo3"></color-scheme>
+                        <axes-option type="x" stacked="true"></axes-option>
+                        <axes-option type="y" stacked="true"></axes-option>
+                    </chart-options>
+                </uibuilder-chart>
+            </div>
+            <div>
+                <uibuilder-chart base-type="pie">
+                    <data-source datasource-id="testDS1"></data-source>
+                    <chart-labels value="key"></chart-labels>
+                    <data-set value="value"></data-set>
+                    <chart-options>
+                        <color-scheme scheme="brewer.SetOne4"></color-scheme>
+                        <translate-data map="transpose" reduce="sumTransposed"></translate-data>
+                    </chart-options>
+                </uibuilder-chart>
+            </div>
+            <div>
+                <uibuilder-chart base-type="line">
+                    <data-source datasource-id="testDS1"></data-source>
+                    <chart-labels value="index"></chart-labels>
+                    <line-data-set value="elephants" label="Elephants"
+                                   line-tension="0.2"
+                                   point-radius="1"
+                                   fill="start"></line-data-set>
+                    <line-data-set value="chickens" label="Chickens"
+                                   line-tension="0.2"
+                                   point-radius="1"
+                                   fill="-1"></line-data-set>
+                    <line-data-set value="horses" label="Horses"
+                                   line-tension="0.2" span-gaps
+                                   point-radius="1"
+                                   fill="-1"></line-data-set>
+                    <chart-options>
+                        <color-scheme scheme="brewer.Spectral4" reverse></color-scheme>
+                        <axes-option type="y" stacked></axes-option>
+                    </chart-options>
+                </uibuilder-chart>
+            </div>
+        </div>
     </div>
 </uibuilder-page>

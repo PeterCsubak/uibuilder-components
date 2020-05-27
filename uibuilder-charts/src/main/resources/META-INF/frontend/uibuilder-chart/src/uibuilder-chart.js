@@ -1,9 +1,19 @@
 import {html, PolymerElement} from '@polymer/polymer/polymer-element.js';
 import {ThemableMixin} from '@vaadin/vaadin-themable-mixin/vaadin-themable-mixin.js';
 import {DataSource} from "@vaadin/flow-frontend/uibuilder/data/data-source.js";
+import {ItemDataSource} from "@vaadin/flow-frontend/uibuilder/data/item-data-source.js";
 import {Chart} from 'chart.js';
+import 'chartjs-plugin-colorschemes';
+import 'chartjs-plugin-zoom';
 import {ChartLabels} from "./chart-labels";
 import {DataSet} from "./data-set";
+import {BarDataSet} from "./bar-data-set";
+import {LineDataSet} from "./line-data-set";
+import {RadarDataSet} from "./radar-data-set";
+import {PielikeDataSet} from "./pielike-data-set";
+import {PolarDataSet} from "./polar-data-set";
+import {ColorScheme} from "./color-scheme";
+import {TranslateData} from "./translate-data";
 import {ChartOptions} from "./chart-options";
 
 export class UibuilderChart extends ThemableMixin(PolymerElement) {
@@ -12,14 +22,20 @@ export class UibuilderChart extends ThemableMixin(PolymerElement) {
         return html`
         <style>
             :host {
-                width: 100%;
-                height: 100%;
+                display: flex;
+            }
+            
+            #chartContainer {
+                position: relative;
+                flex: 1;
             }
         </style>
         
         <slot></slot>
         
-        <canvas id="chartCanvas"></canvas>
+        <div id="chartContainer">
+            <canvas id="chartCanvas"></canvas>
+        </div>
         `;
     }
 
@@ -27,7 +43,7 @@ export class UibuilderChart extends ThemableMixin(PolymerElement) {
         return {
             baseType: {
                 type: String,
-                value: 'bar'
+                value: 'bar' // values: 'bar', 'horizontalBar', 'line', 'radar', 'pie', 'doughnut', 'polarArea'
             }
         };
     }
@@ -36,43 +52,61 @@ export class UibuilderChart extends ThemableMixin(PolymerElement) {
         this._sendConfigToBackend();
     }
 
+    _findDataSource() {
+        let ds = this.querySelector(DataSource.is);
+        if (!ds) {
+            ds = this.querySelector(ItemDataSource.is);
+        }
+        return ds;
+    }
+
     _sendConfigToBackend() {
-        const ds = this.querySelector(DataSource.is);
+        const ds = this._findDataSource();
 
         if (!ds) {
             throw new Error(`${DataSource.is} is missing from ${this.tagName} with id:'${this.id}'`);
         } else {
-            this._dataSource = {
-                id: ds.datasourceId,
-                name: ds.name,
-                defaultQuery: ds.defaultQuery
-            };
+            if (ds instanceof DataSource) {
+                this._dataSource = {
+                    id: ds.datasourceId,
+                    name: ds.name,
+                    defaultQuery: ds.defaultQuery
+                };
+            } else {
+                this._dataSource = {
+                    id: ds.getAttribute('datasource-id'),
+                    name: ds.name,
+                    defaultQuery: ds.defaultQuery
+                };
+            }
         }
 
-        const propertyHolders = this.children
-            .filter(it => it instanceof ChartLabels
-                || it instanceof DataSet
-                || it instanceof ChartOptions);
+        this._labels = Array.from(this.children)
+            .find(it => it instanceof ChartLabels);
 
-        this._labels = UibuilderChart._getPropertiesOf(propertyHolders, it => it instanceof ChartLabels);
-        this._dataSets = UibuilderChart._getPropertiesOf(propertyHolders, it => it instanceof DataSet);
-        this._options = UibuilderChart._getPropertiesOf(propertyHolders, it => it instanceof ChartOptions);
+        this._dataSets = Array.from(this.children)
+            .filter(it => it instanceof DataSet);
 
-        if (!this._labels && length(this._labels) !== 1)
+        this._options = Array.from(this.children)
+            .find(it => it instanceof ChartOptions);
+
+        let dataSets = UibuilderChart._getPropertiesOf(this._dataSets, it => it instanceof DataSet);
+
+        if (!this._labels)
             throw new Error(`The labels are specified incorrectly for chart with id: ${this.id}`);
-        else
-            this._labels = this._labels[0];
 
-        if (this._options && length(this._options) > 0)
-            this._options = this._options[0];
-        else
-            this._options = undefined;
+        let labels = this._labels._getPropertiesObject();
+        let options = undefined;
+
+        if (this._options)
+            options = this._options._getPropertiesObject();
 
         this.dispatchEvent(new CustomEvent('chart-properties-ready', {
             detail: {
-                labels: this._labels,
-                dataSets: this._dataSets,
-                ...(this._options && {options: this._options})
+                dataSource: this._dataSource,
+                labels: labels,
+                dataSets: dataSets,
+                ...(options && {options: options})
             }
         }));
     }
@@ -91,7 +125,7 @@ export class UibuilderChart extends ThemableMixin(PolymerElement) {
     }
 
     __convertToChartData(data) {
-        if (!data || length(data) === 0) {
+        if (!data || data.length === 0) {
             return {labels: [], datasets: []};
         }
         const chartDataSets = this._convertToDataSets(data);
@@ -111,11 +145,11 @@ export class UibuilderChart extends ThemableMixin(PolymerElement) {
     }
 
     _convertToDataSets(data) {
-        if (length(data) - 1 !== length(this._dataSets)) {
+        if (data.length - 1 !== this._dataSets.length) {
             throw new Error('Got data array with different size as dataset size');
         }
 
-        for (let i = 1; i < length(data); i++) {
+        for (let i = 1; i < data.length; i++) {
             this._dataSets[i - 1].setData(data[i]);
         }
 
@@ -139,3 +173,5 @@ export class UibuilderChart extends ThemableMixin(PolymerElement) {
 }
 
 customElements.define(UibuilderChart.is, UibuilderChart);
+
+// TODO add support for complex data structures (line x,y and bubble x,y,r)

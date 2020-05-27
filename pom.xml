@@ -20,8 +20,9 @@
 	<properties>
 		<polymer.version>2.5.0</polymer.version>
 		<polymer-vis.version>2.0.3</polymer-vis.version>
-		<uibuilder.version>2.0.0</uibuilder.version>
+		<uibuilder.version>2.0.2-SNAPSHOT</uibuilder.version>
 		<project.java.version>12</project.java.version>
+		<vaadin.version>14.1.16</vaadin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -35,6 +36,7 @@
 					<version>${vaadin.version}</version>
 					<configuration>
 						<skipEs5>true</skipEs5>
+						<minify>true</minify>
 					</configuration>
 				</plugin>
 			</plugins>

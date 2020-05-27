@@ -14,19 +14,14 @@ import io.devbench.uibuilder.core.utils.reflection.PropertyMetadata;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static eu.redbean.uibuilder.components.chart.utils.TypeUtils.isNumeric;
+
 @AllArgsConstructor
 public class ChartDataConverter {
-
-    private static final Set<Class<?>> NUMERIC_CLASSES = Set.of(
-            byte.class, short.class, int.class, long.class, float.class, double.class, Number.class
-    );
 
     private final String labelsBindingPath;
     private final List<DataSet> dataSets;
@@ -62,27 +57,27 @@ public class ChartDataConverter {
     }
 
     private JsonValue convertToJsonValue(@Nullable PropertyMetadata<?> property) {
-        if (property != null && PropertyConverters.isConvertibleProperty(property)) {
-            PropertyConverter<?, ?> propertyConverter = PropertyConverters.getConverterFor(property);
-            if (propertyConverter instanceof JsonPropertyConverter) {
-                return ((JsonPropertyConverter<?>) propertyConverter).convertTo(property.getValue());
-            } else {
-                if (!property.isAnnotationPresent(Converter.class) && isNumeric(property.getType())) {
-                    return Json.create(((Number) property.getValue()).doubleValue());
-                }
+        if (property != null) {
+            if (!property.isAnnotationPresent(Converter.class) && isNumeric(property.getType())) {
+                return Optional.ofNullable(property.getValue())
+                        .map(Number.class::cast)
+                        .<JsonValue>map(number -> Json.create(number.doubleValue()))
+                        .orElse(Json.createNull());
+            }
 
-                if (propertyConverter instanceof StringPropertyConverter) {
-                    return Json.create(((StringPropertyConverter<?>) propertyConverter).convertTo(property.getValue()));
+            if (PropertyConverters.isConvertibleProperty(property)) {
+                PropertyConverter<?, ?> propertyConverter = PropertyConverters.getConverterFor(property);
+                if (propertyConverter instanceof JsonPropertyConverter) {
+                    return ((JsonPropertyConverter<?>) propertyConverter).convertTo(property.getValue());
+                } else {
+                    if (propertyConverter instanceof StringPropertyConverter) {
+                        return Json.create(((StringPropertyConverter<?>) propertyConverter).convertTo(property.getValue()));
+                    }
                 }
             }
         }
 
         return Json.createNull();
-    }
-
-    private boolean isNumeric(Class<?> type) {
-        return NUMERIC_CLASSES.stream()
-                .anyMatch(numClass -> numClass.isAssignableFrom(type));
     }
 
 }
