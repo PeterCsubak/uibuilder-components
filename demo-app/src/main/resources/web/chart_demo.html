@@ -45,7 +45,7 @@
         </uibuilder-common-filter>
         <div id="charts">
             <div>
-                <uibuilder-chart base-type="bar">
+                <uibuilder-chart id="firstChart" base-type="bar">
                     <item-data-source datasource-id="testDS1" name="testDS"
                                       items="{{chartDemo.items}}"></item-data-source>
                     <chart-labels value="index"></chart-labels>
@@ -71,6 +71,7 @@
                         <axes-option type="y" axis-id="y1" position="left" scale="linear"></axes-option>
                         <axes-option type="y" axis-id="y2" position="right" scale="logarithmic"></axes-option>
                         <zoom-option zoom-enabled zoom-mode="x" pan-enabled pan-mode="x"></zoom-option>
+                        <animation-option easing="easeInOutSine" duration="300"></animation-option>
                     </chart-options>
                 </uibuilder-chart>
             </div>

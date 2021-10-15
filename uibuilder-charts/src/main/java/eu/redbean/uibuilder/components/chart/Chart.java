@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import elemental.json.Json;
 import eu.redbean.uibuilder.components.chart.events.PropertiesReadyEvent;
 import eu.redbean.uibuilder.components.chart.model.ChartDataConverter;
 import eu.redbean.uibuilder.components.chart.model.DataSet;
@@ -80,6 +81,10 @@ public class Chart<T> extends Component
     private List<?> fetchItems() {
         var dataSource = (CommonDataSource<?, ?, ?, ?>) DataSourceManager.getInstance().getDataSource(dataSourceId, new CommonDataSourceSelector(defaultQueryName, this));
         List<?> items = dataSource.fetchData((PagingFetchRequest) null);
+        return translateDataIfRequired(items);
+    }
+
+    private List<?> translateDataIfRequired(List<?> items) {
         var translateData = options.getTranslateData();
         if (translateData != null) {
             return translateData.reduce().apply(
@@ -114,4 +119,11 @@ public class Chart<T> extends Component
     public String getContextId() {
         return dataSourceContextId;
     }
+
+    public void pushNewItems(List<T> items, boolean removeOld) {
+        this.getElement().callJsFunction("_pushNewData",
+                dataConverter.convertToChartData(translateDataIfRequired(items)),
+                Json.create(removeOld));
+    }
+
 }

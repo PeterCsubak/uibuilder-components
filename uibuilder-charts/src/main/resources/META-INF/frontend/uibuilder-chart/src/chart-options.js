@@ -1,12 +1,15 @@
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import {AxesOption} from "./axes-option";
 import {ZoomOption} from "./zoom-option";
+import {AnimationOption} from "./animation-option";
 
 export class ChartOptions extends PolymerElement {
 
     toChartObject() {
         let scaleOption = this._createScaleOption();
+        let animationOption = this._findAnimationOption();
         return {
+            ...(animationOption && {animation: animationOption}),
             ...(scaleOption && {scales: scaleOption}),
             plugins: this._collectPlugins()
         }; // TODO implement later with details, especially dont forget to add axes support to datasets too
@@ -20,6 +23,15 @@ export class ChartOptions extends PolymerElement {
                 ...((xAxes && xAxes.length > 0) && {xAxes: xAxes}),
                 ...((yAxes && yAxes.length > 0) && {yAxes: yAxes})
             }
+        }
+        return false;
+    }
+
+    _findAnimationOption() {
+        let res = Array.from(this.children)
+            .find(it => it instanceof AnimationOption);
+        if (res) {
+            return res.toChartObject();
         }
         return false;
     }

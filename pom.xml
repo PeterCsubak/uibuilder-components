@@ -12,17 +12,18 @@
 		<module>c3-charts</module>
 		<module>demo-app</module>
 		<module>uibuilder-charts</module>
+		<module>rx-data-source</module>
 	</modules>
 
 	<name>Custom components for UIBuilder</name>
 	<description>Custom components for UIBuilder framework</description>
 
 	<properties>
-		<polymer.version>2.5.0</polymer.version>
+		<polymer.version>2.8.0</polymer.version>
 		<polymer-vis.version>2.0.3</polymer-vis.version>
-		<uibuilder.version>2.0.2-SNAPSHOT</uibuilder.version>
+		<uibuilder.version>2.1.2</uibuilder.version>
 		<project.java.version>12</project.java.version>
-		<vaadin.version>14.1.16</vaadin.version>
+		<vaadin.version>14.4.1</vaadin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 

@@ -144,6 +144,78 @@ export class UibuilderChart extends ThemableMixin(PolymerElement) {
         }
     }
 
+    __getCachedAnimDuration() {
+        if (!this.__animDurationCache) {
+            if (this._options && this._options.toChartObject) {
+                const chartObj = this._options.toChartObject();
+                if (chartObj.animation && chartObj.animation.duration) {
+                    this.__animDurationCache = chartObj.animation.duration;
+                } else {
+                    this.__animDurationCache = 800;
+                }
+            } else {
+                this.__animDurationCache = 800;
+            }
+        }
+        return this.__animDurationCache;
+    }
+
+    _pushNewData(data, removeOld) {
+        if (this.__chart) {
+            const chartData = this.__convertToChartData(data);
+
+            const shift = removeOld
+                && (this.baseType === 'bar' || this.baseTyoe === 'line')
+                && this.__chart.data.labels.length > chartData.labels.length;
+
+            const animDuration = this.__getCachedAnimDuration();
+            const currentLength = this.__chart.data.labels[0].length;
+            const currentLabelMin = this.__chart.data.labels[0];
+            const currentLabelMax = this.__chart.data.labels[this.__chart.data.labels.length - 1];
+            const targetLabelMin = this.__chart.data.labels[chartData.labels.length];
+            const targetLabelMax = chartData.labels[chartData.labels.length - 1];
+
+            this.__chart.options.scales.xAxes[0].ticks.min = currentLabelMin;
+            this.__chart.options.scales.xAxes[0].ticks.max = currentLabelMax;
+
+            for (let i = 0; i < chartData.labels.length; i++) {
+                this.__chart.data.labels.push(chartData.labels[i]);
+                if (removeOld && !shift)
+                    this.__chart.data.labels.shift();
+
+                for (let j = 0; j < chartData.datasets.length; j++) {
+                    this.__chart.data.datasets[j].data.push(chartData.datasets[j].data[i]);
+                    if (removeOld && !shift)
+                        this.__chart.data.datasets[j].data.shift();
+                }
+            }
+
+            this.__chart.update();
+
+            if (shift) {
+                setTimeout(() => {
+                    this.__chart.options.scales.xAxes[0].ticks.min = targetLabelMin;
+                    this.__chart.options.scales.xAxes[0].ticks.max = targetLabelMax;
+                    this.__chart.update();
+                    setTimeout(() => {
+                        for (let i = 0; i < chartData.labels.length; i++) {
+                            this.__chart.data.labels.shift();
+                            this.__chart.data.datasets.forEach((ds) => ds.data.shift());
+                        }
+                        this.__chart.update();
+                    }, animDuration);
+                }, 10);
+            }
+
+            if (!shift) {
+                setTimeout(() => {
+                    this.__chart.options.scales.xAxes[0].ticks.max = targetLabelMax;
+                    this.__chart.update();
+                }, animDuration)
+            }
+        }
+    }
+
     _convertToDataSets(data) {
         if (data.length - 1 !== this._dataSets.length) {
             throw new Error('Got data array with different size as dataset size');
